@@ -1,0 +1,51 @@
+# Install boot9strap, copy files to another SD and copy luma to CTRNAND
+# last changed: 20171101
+# author: Bestfast
+
+set SUCCESSMSG "Install + Copy completed successfully"
+
+# Allow NAND writing
+allow S:/firm0.bin
+allow S:/firm1.bin
+allow -a 1:/
+allow -a 9:/
+
+# copy to ramdrive
+cp 0:/MOD_3DS 9:/MOD_3DS
+# Switch SD cards
+switchsd "Please switch SD cards."
+
+# Allow SD CARD writing
+allow -a 0:/
+
+# copy to SD
+cp -w 9:/MOD_3DS 0:/
+
+# Look for boot9strap
+set ERRORMSG "Boot9Strap file not found!"
+find 0:/boot9strap/boot9stra*.firm B9S
+set ERRORMSG "SHA check failed on Boot9Strap file"
+sha $[B9S] $[B9S].sha
+
+
+# Backup FIRMs
+cp -w -n S:/firm0.bin $[GM9OUT]/firm0.bak
+cp -w -n S:/firm1.bin $[GM9OUT]/firm1.bak
+
+
+# Inject sighax into firm0 & firm1
+set ERRORMSG "Unable to inject boot9strap!\n \nRun SafeB9SInstaller after."
+cp -w -n $[B9S] S:/firm0.bin
+cp -w -n $[B9S] S:/firm1.bin
+
+
+set ERRORMSG "Copy failed"
+# copy luma to CTRNAND
+
+# remove existing files just in case
+rm -o -s 1:/boot.firm
+rm -o -s 1:/rw/luma
+
+
+# boot Luma3DS
+boot 0:/luma-mod.firm
